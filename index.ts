@@ -5,9 +5,12 @@ import { xPost } from "./lib/x.ts";
 import { bskyPost } from "./lib/bsky.ts";
 import { mastoPost } from "./lib/masto.ts";
 
+import { Embed, Webhook } from "jsr:@harmony/harmony";
+
 const db = await Deno.openKv(
 	Deno.env.get("DENO_DEPLOYMENT_ID") == undefined ? "./db.sqlite" : undefined,
 );
+const hook = await Webhook.fromURL(Deno.env.get("DISCORD_WEBHOOK_URL")!);
 
 interface Alert {
 	lastMessage: string;
@@ -74,6 +77,19 @@ const postUpdatesCronAction = async () => {
 				await db.set(["isTwitterBlocked"], true, {
 					expireIn: 24 * 60 * 60 * 1000,
 				});
+				await hook.send({
+					content: "<@&314166178144583682>",
+					embeds: [
+						new Embed({
+							author: {
+								name: "CTAAlert",
+							},
+							title:
+								"Twitter error occured (Potentially blocked)",
+							description: "```" + (e as Error).message + "```",
+						}),
+					],
+				});
 			}
 		}
 
@@ -82,6 +98,18 @@ const postUpdatesCronAction = async () => {
 				bskyID = await bskyPost(alertMessage, alert.EventStart);
 			} catch (e) {
 				console.error("An error occurred while posting to Bsky", e);
+				await hook.send({
+					content: "<@&314166178144583682>",
+					embeds: [
+						new Embed({
+							author: {
+								name: "CTAAlert",
+							},
+							title: "Bsky error occured",
+							description: "```" + (e as Error).message + "```",
+						}),
+					],
+				});
 			}
 		}
 
@@ -93,6 +121,18 @@ const postUpdatesCronAction = async () => {
 				mastodonID = await mastoPost(alertMessage);
 			} catch (e) {
 				console.error("An error occurred while posting to Mastodon", e);
+				await hook.send({
+					content: "<@&314166178144583682>",
+					embeds: [
+						new Embed({
+							author: {
+								name: "CTAAlert",
+							},
+							title: "Mastodon error occured",
+							description: "```" + (e as Error).message + "```",
+						}),
+					],
+				});
 			}
 		}
 
