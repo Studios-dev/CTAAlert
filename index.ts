@@ -46,13 +46,6 @@ const postUpdatesCronAction = async () => {
 		activeAlerts.keys().filter((key) => activeAlerts.get(key) == undefined),
 	);
 
-	await Deno.writeTextFile(
-		"./alertinfo.txt",
-		`${alerts.CTAAlerts.Alert.map((a) => a.AlertId).sort().join(", ")} \n${
-			deletedAlerts.keys().toArray().sort().join(", ")
-		}`,
-	);
-
 	for (
 		const alert of alerts.CTAAlerts.Alert.sort((a, b) =>
 			parseInt(b.AlertId) - parseInt(a.AlertId)
@@ -211,6 +204,7 @@ const postUpdatesCronAction = async () => {
 					description: `${updatedAlerts} alerts updated`,
 				}).setColor("random"),
 			],
+			name: "CTAAlert"
 		});	
 	}
 
