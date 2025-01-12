@@ -155,3 +155,8 @@ const postUpdatesCronAction = async () => {
 		await db.delete(["alert", deletedAlert]);
 	}
 };
+
+// Make this run every 5 hours for now to prevent potential problems with my code
+if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
+	Deno.cron("SendUpdates", { hour: { every: 5 } }, postUpdatesCronAction);
+}
