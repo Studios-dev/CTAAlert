@@ -168,5 +168,5 @@ const postUpdatesCronAction = async () => {
 
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 	// Update every 5 minutes
-	Deno.cron("SendUpdates", { minute: { every: 5 } }, postUpdatesCronAction);
+	//Deno.cron("SendUpdates", { minute: { every: 5 } }, postUpdatesCronAction);
 }
