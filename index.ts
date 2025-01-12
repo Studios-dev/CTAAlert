@@ -208,6 +208,7 @@ const postUpdatesCronAction = async () => {
 									`- ${e}`
 								).join("\n\t")
 							}\n\`\`\``,
+							inline: true,
 						},
 						{
 							name: "Cleared",
@@ -216,6 +217,7 @@ const postUpdatesCronAction = async () => {
 									`- ${e}`
 								).join("\n\t")
 							}\n\`\`\``,
+							inline: true,
 						},
 					],
 				}).setColor("random"),
