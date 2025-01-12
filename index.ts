@@ -7,9 +7,7 @@ import { mastoPost } from "./lib/masto.ts";
 
 import { Embed, Webhook } from "jsr:@harmony/harmony";
 
-const db = await Deno.openKv(
-	Deno.env.get("DENO_DEPLOYMENT_ID") == undefined ? "./db.sqlite" : undefined,
-);
+const db = await Deno.openKv("https://api.deno.com/databases/473126eb-c5d9-4ba0-b7a4-267a8a89c3ec/connect");;
 const hook = await Webhook.fromURL(Deno.env.get("DISCORD_WEBHOOK_URL")!);
 
 interface Alert {
@@ -38,7 +36,7 @@ const postUpdatesCronAction = async () => {
 	for (
 		const alert of alerts.CTAAlerts.Alert.sort((a, b) =>
 			parseInt(b.AlertId) - parseInt(a.AlertId)
-		)
+		).slice(0, 1)
 	) {
 		const alertMessage = [
 			`[${alert.Impact}] ${alert.ShortDescription.trim()}`,
@@ -60,38 +58,38 @@ const postUpdatesCronAction = async () => {
 		let bskyID: string | undefined = existingAlert?.bskyId;
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
-		if (
-			isTwitterBlocked.value == undefined &&
-			(twitterID == undefined ||
-				existingAlert?.lastMessage != alertMessage)
-		) {
-			try {
-				twitterID = await xPost(alertMessage);
-			} catch (e) {
-				console.error("An error occurred while posting to Twitter", e);
-				isTwitterBlocked = {
-					...isTwitterBlocked,
-					versionstamp: "",
-					value: true,
-				};
-				await db.set(["isTwitterBlocked"], true, {
-					expireIn: 24 * 60 * 60 * 1000,
-				});
-				await hook.send({
-					content: "<@&314166178144583682>",
-					embeds: [
-						new Embed({
-							author: {
-								name: "CTAAlert",
-							},
-							title:
-								"Twitter error occured (Potentially blocked)",
-							description: "```" + (e as Error).message + "```",
-						}),
-					],
-				});
-			}
-		}
+		// if (
+		// 	isTwitterBlocked.value == undefined &&
+		// 	(twitterID == undefined ||
+		// 		existingAlert?.lastMessage != alertMessage)
+		// ) {
+		// 	try {
+		// 		twitterID = await xPost(alertMessage);
+		// 	} catch (e) {
+		// 		console.error("An error occurred while posting to Twitter", e);
+		// 		isTwitterBlocked = {
+		// 			...isTwitterBlocked,
+		// 			versionstamp: "",
+		// 			value: true,
+		// 		};
+		// 		await db.set(["isTwitterBlocked"], true, {
+		// 			expireIn: 24 * 60 * 60 * 1000,
+		// 		});
+		// 		await hook.send({
+		// 			content: "<@!314166178144583682> Error occured",
+		// 			embeds: [
+		// 				new Embed({
+		// 					author: {
+		// 						name: "CTAAlert",
+		// 					},
+		// 					title:
+		// 						"Twitter error occured (Potentially blocked)",
+		// 					description: "```" + (e as Error).message + "```",
+		// 				}).setColor("random"),
+		// 			],
+		// 		});
+		// 	}
+		// }
 
 		if (bskyID == undefined || existingAlert?.lastMessage != alertMessage) {
 			try {
@@ -99,7 +97,7 @@ const postUpdatesCronAction = async () => {
 			} catch (e) {
 				console.error("An error occurred while posting to Bsky", e);
 				await hook.send({
-					content: "<@&314166178144583682>",
+					content: "<@!314166178144583682> Error occured",
 					embeds: [
 						new Embed({
 							author: {
@@ -107,34 +105,34 @@ const postUpdatesCronAction = async () => {
 							},
 							title: "Bsky error occured",
 							description: "```" + (e as Error).message + "```",
-						}),
+						}).setColor("random"),
 					],
 				});
 			}
 		}
 
-		if (
-			mastodonID == undefined ||
-			existingAlert?.lastMessage != alertMessage
-		) {
-			try {
-				mastodonID = await mastoPost(alertMessage);
-			} catch (e) {
-				console.error("An error occurred while posting to Mastodon", e);
-				await hook.send({
-					content: "<@&314166178144583682>",
-					embeds: [
-						new Embed({
-							author: {
-								name: "CTAAlert",
-							},
-							title: "Mastodon error occured",
-							description: "```" + (e as Error).message + "```",
-						}),
-					],
-				});
-			}
-		}
+		// if (
+		// 	mastodonID == undefined ||
+		// 	existingAlert?.lastMessage != alertMessage
+		// ) {
+		// 	try {
+		// 		mastodonID = await mastoPost(alertMessage);
+		// 	} catch (e) {
+		// 		console.error("An error occurred while posting to Mastodon", e);
+		// 		await hook.send({
+		// 			content: "<@!314166178144583682> Error occured",
+		// 			embeds: [
+		// 				new Embed({
+		// 					author: {
+		// 						name: "CTAAlert",
+		// 					},
+		// 					title: "Mastodon error occured",
+		// 					description: "```" + (e as Error).message + "```",
+		// 				}).setColor("random"),
+		// 			],
+		// 		});
+		// 	}
+		// }
 
 		const newEntry: Alert = {
 			lastMessage: alertMessage,
@@ -147,6 +145,10 @@ const postUpdatesCronAction = async () => {
 			JSON.stringify(existingAlert) != JSON.stringify(newEntry)
 		) {
 			await db.set(["alert", alert.AlertId], newEntry);
+		} else {
+			console.log("No changes to alert", alert.AlertId);
+			console.log(existingAlert);
+			console.log(newEntry);
 		}
 	}
 
@@ -158,5 +160,9 @@ const postUpdatesCronAction = async () => {
 
 // Make this run every 5 hours for now to prevent potential problems with my code
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
+	// The code doesn't work atm so don't make it run
+	Deno.exit(0);
 	Deno.cron("SendUpdates", { hour: { every: 5 } }, postUpdatesCronAction);
 }
+
+// postUpdatesCronAction();
