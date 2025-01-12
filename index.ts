@@ -8,7 +8,7 @@ import { mastoPost } from "./lib/masto.ts";
 import { Embed, Webhook } from "jsr:@harmony/harmony";
 
 const db = await Deno.openKv(
-	Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
+	Deno.env.get("DENO_DEPLOYMENT_ID") == undefined
 		? Deno.env.get("DENO_DEPLOY_DB_URL")
 		: undefined,
 );
