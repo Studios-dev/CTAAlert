@@ -23,6 +23,10 @@ interface Alert {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const twitterTimeout = 24 * 60 * 60 * 1000;
+const bskyTimeout = 24 * 60 * 60 * 1000;
+const mastoTimeout = 3 * 60 * 60 * 1000;
+
 const postUpdatesCronAction = async () => {
 	let [isTwitterBlocked, isMastoBlocked, isBskyBlocked] = await db.getMany<
 		[boolean, boolean, boolean]
@@ -88,7 +92,7 @@ const postUpdatesCronAction = async () => {
 					value: true,
 				};
 				await db.set(["isTwitterBlocked"], true, {
-					expireIn: 24 * 60 * 60 * 1000,
+					expireIn: twitterTimeout,
 				});
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
@@ -120,7 +124,7 @@ const postUpdatesCronAction = async () => {
 					value: true,
 				};
 				await db.set(["isBskyBlocked"], true, {
-					expireIn: 24 * 60 * 60 * 1000,
+					expireIn: bskyTimeout,
 				});
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
@@ -147,6 +151,14 @@ const postUpdatesCronAction = async () => {
 				mastodonID = await mastoPost(alertMessage);
 			} catch (e) {
 				console.error("An error occurred while posting to Mastodon", e);
+				isMastoBlocked = {
+					...isMastoBlocked,
+					versionstamp: "",
+					value: true,
+				};
+				await db.set(["isMastoBlocked"], true, {
+					expireIn: mastoTimeout,
+				});
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
 					embeds: [
@@ -155,7 +167,7 @@ const postUpdatesCronAction = async () => {
 								name: "CTAAlert",
 							},
 							title: "Mastodon error occured",
-							description: "```" + (e as Error).message + "```",
+							description: "```" + (e as Error) + "```",
 						}).setColor("random"),
 					],
 				});
@@ -188,8 +200,10 @@ const postUpdatesCronAction = async () => {
 	console.log("Done checking alerts");
 };
 
+const somethingsBroken = true;
+
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 	// Update every 5 minutes
-	//Deno.cron("SendUpdates", { minute: { every: 5 } }, postUpdatesCronAction);
-	Deno.cron("SendUpdates", { minute: { every: 5 } }, () => {});
+	// Do nothing if something's broken
+	Deno.cron("SendUpdates", { minute: { every: 5 } }, somethingsBroken ? () => {} : postUpdatesCronAction);
 }
