@@ -21,6 +21,8 @@ interface Alert {
 	bskyId?: string;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const postUpdatesCronAction = async () => {
 	let isTwitterBlocked = await db.get<boolean>(["isTwitterBlocked"]);
 	const activeAlerts = new Map<string, Alert>();
@@ -40,7 +42,7 @@ const postUpdatesCronAction = async () => {
 	for (
 		const alert of alerts.CTAAlerts.Alert.sort((a, b) =>
 			parseInt(b.AlertId) - parseInt(a.AlertId)
-		).slice(0, 1)
+		)
 	) {
 		const alertMessage = [
 			`[${alert.Impact}] ${alert.ShortDescription.trim()}`,
@@ -151,6 +153,8 @@ const postUpdatesCronAction = async () => {
 			console.log("Updating alert", alert.AlertId);
 			await db.set(["alert", alert.AlertId], newEntry);
 		}
+
+		await sleep(1000 * Math.random());
 	}
 
 	// We might want to potentially do something about these alerts but I think for now I'm just going to ignore them
@@ -163,7 +167,6 @@ const postUpdatesCronAction = async () => {
 };
 
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
-	// The code doesn't work atm so don't make it run
-	Deno.exit(0);
-	Deno.cron("SendUpdates", { hour: { every: 5 } }, postUpdatesCronAction);
+	// Update every 5 minutes
+	Deno.cron("SendUpdates", { minute: { every: 5 } }, postUpdatesCronAction);
 }
