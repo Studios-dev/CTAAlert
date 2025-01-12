@@ -28,7 +28,7 @@ const bskyTimeout = 24 * 60 * 60 * 1000;
 const mastoTimeout = 3 * 60 * 60 * 1000;
 
 const postUpdatesCronAction = async () => {
-	let updatedAlerts = 0;
+	const updatedAlerts = new Set<string>();
 	let [isTwitterBlocked, isMastoBlocked, isBskyBlocked] = await db.getMany<
 		[boolean, boolean, boolean]
 	>([["isTwitterBlocked"], ["isMastoBlocked"], ["isBskyBlocked"]]);
@@ -180,7 +180,7 @@ const postUpdatesCronAction = async () => {
 		) {
 			console.log("Updating alert", alert.AlertId);
 			await db.set(["alert", alert.AlertId], newEntry);
-			updatedAlerts++;
+			updatedAlerts.add(alert.AlertId);
 		}
 
 		await sleep(1000 * Math.random());
@@ -189,11 +189,10 @@ const postUpdatesCronAction = async () => {
 	// We might want to potentially do something about these alerts but I think for now I'm just going to ignore them
 	for (const deletedAlert of deletedAlerts) {
 		console.log("Deleting alert", deletedAlert);
-		updatedAlerts++;
 		await db.delete(["alert", deletedAlert]);
 	}
 
-	if (updatedAlerts > 0) {
+	if (updatedAlerts.size > 0 || deletedAlerts.size > 0) {
 		await hook.send({
 			embeds: [
 				new Embed({
@@ -201,11 +200,28 @@ const postUpdatesCronAction = async () => {
 						name: "CTAAlert",
 					},
 					title: "Alerts updated",
-					description: `${updatedAlerts} alerts updated`,
+					fields: [
+						{
+							name: "Updated/Added",
+							value: `\`\`\`\n\t${
+								updatedAlerts.keys().toArray().map((e) =>
+									`- ${e}`
+								).join("\n\t")
+							}\n\`\`\``,
+						},
+						{
+							name: "Cleared",
+							value: `\`\`\`\n\t${
+								deletedAlerts.keys().toArray().map((e) =>
+									`- ${e}`
+								).join("\n\t")
+							}\n\`\`\``,
+						},
+					],
 				}).setColor("random"),
 			],
-			name: "CTAAlert"
-		});	
+			name: "CTAAlert",
+		});
 	}
 
 	console.log("Done checking alerts");
@@ -216,5 +232,9 @@ const somethingsBroken = false;
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 	// Update every 5 minutes
 	// Do nothing if something's broken
-	Deno.cron("SendUpdates", { minute: { every: 5 } }, somethingsBroken ? () => {} : postUpdatesCronAction);
+	Deno.cron(
+		"SendUpdates",
+		{ minute: { every: 5 } },
+		somethingsBroken ? () => {} : postUpdatesCronAction,
+	);
 }
