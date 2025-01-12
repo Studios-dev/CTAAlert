@@ -24,7 +24,9 @@ interface Alert {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const postUpdatesCronAction = async () => {
-	let isTwitterBlocked = await db.get<boolean>(["isTwitterBlocked"]);
+	let [isTwitterBlocked, isMastoBlocked, isBskyBlocked] = await db.getMany<
+		[boolean, boolean, boolean]
+	>([["isTwitterBlocked"], ["isMastoBlocked"], ["isBskyBlocked"]]);
 	const activeAlerts = new Map<string, Alert>();
 
 	for await (const entry of db.list<Alert>({ "prefix": ["alert"] })) {
@@ -36,7 +38,14 @@ const postUpdatesCronAction = async () => {
 		`Checking ${alerts.CTAAlerts.Alert.length} alerts for updates...`,
 	);
 	const deletedAlerts = new Set(
-		activeAlerts.keys().filter((key) => activeAlerts.get(key) != undefined),
+		activeAlerts.keys().filter((key) => activeAlerts.get(key) == undefined),
+	);
+
+	await Deno.writeTextFile(
+		"./alertinfo.txt",
+		`${alerts.CTAAlerts.Alert.map((a) => a.AlertId).sort().join(", ")} \n${
+			deletedAlerts.keys().toArray().sort().join(", ")
+		}`,
 	);
 
 	for (
@@ -97,11 +106,22 @@ const postUpdatesCronAction = async () => {
 			}
 		}
 
-		if (bskyID == undefined || existingAlert?.lastMessage != alertMessage) {
+		if (
+			isBskyBlocked.value == undefined &&
+			(bskyID == undefined || existingAlert?.lastMessage != alertMessage)
+		) {
 			try {
 				bskyID = await bskyPost(alertMessage, alert.EventStart);
 			} catch (e) {
 				console.error("An error occurred while posting to Bsky", e);
+				isBskyBlocked = {
+					...isBskyBlocked,
+					versionstamp: "",
+					value: true,
+				};
+				await db.set(["isBskyBlocked"], true, {
+					expireIn: 24 * 60 * 60 * 1000,
+				});
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
 					embeds: [
@@ -118,8 +138,10 @@ const postUpdatesCronAction = async () => {
 		}
 
 		if (
-			mastodonID == undefined ||
-			existingAlert?.lastMessage != alertMessage
+			isMastoBlocked.value == undefined && (
+				mastodonID == undefined ||
+				existingAlert?.lastMessage != alertMessage
+			)
 		) {
 			try {
 				mastodonID = await mastoPost(alertMessage);
@@ -169,4 +191,5 @@ const postUpdatesCronAction = async () => {
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 	// Update every 5 minutes
 	//Deno.cron("SendUpdates", { minute: { every: 5 } }, postUpdatesCronAction);
+	Deno.cron("SendUpdates", { minute: { every: 5 } }, () => {});
 }
