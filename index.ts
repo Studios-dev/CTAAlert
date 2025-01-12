@@ -28,6 +28,7 @@ const bskyTimeout = 24 * 60 * 60 * 1000;
 const mastoTimeout = 3 * 60 * 60 * 1000;
 
 const postUpdatesCronAction = async () => {
+	let updatedAlerts = 0;
 	let [isTwitterBlocked, isMastoBlocked, isBskyBlocked] = await db.getMany<
 		[boolean, boolean, boolean]
 	>([["isTwitterBlocked"], ["isMastoBlocked"], ["isBskyBlocked"]]);
@@ -186,6 +187,7 @@ const postUpdatesCronAction = async () => {
 		) {
 			console.log("Updating alert", alert.AlertId);
 			await db.set(["alert", alert.AlertId], newEntry);
+			updatedAlerts++;
 		}
 
 		await sleep(1000 * Math.random());
@@ -194,13 +196,28 @@ const postUpdatesCronAction = async () => {
 	// We might want to potentially do something about these alerts but I think for now I'm just going to ignore them
 	for (const deletedAlert of deletedAlerts) {
 		console.log("Deleting alert", deletedAlert);
+		updatedAlerts++;
 		await db.delete(["alert", deletedAlert]);
+	}
+
+	if (updatedAlerts > 0) {
+		await hook.send({
+			embeds: [
+				new Embed({
+					author: {
+						name: "CTAAlert",
+					},
+					title: "Alerts updated",
+					description: `${updatedAlerts} alerts updated`,
+				}).setColor("random"),
+			],
+		});	
 	}
 
 	console.log("Done checking alerts");
 };
 
-const somethingsBroken = true;
+const somethingsBroken = false;
 
 if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 	// Update every 5 minutes
