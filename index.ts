@@ -43,7 +43,9 @@ const postUpdatesCronAction = async () => {
 		`Checking ${alerts.CTAAlerts.Alert.length} alerts for updates...`,
 	);
 	const deletedAlerts = new Set(
-		activeAlerts.keys().filter((key) => activeAlerts.get(key) == undefined),
+		activeAlerts.keys().filter((key) =>
+			alerts.CTAAlerts.Alert.find((a) => a.AlertId == key) == undefined
+		),
 	);
 
 	for (
