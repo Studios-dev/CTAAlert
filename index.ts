@@ -23,8 +23,7 @@ interface Alert {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Technically twitter's timeout is 24 hours but I think that's based on when the first tweet was made
-const twitterTimeout = 6 * 60 * 60 * 1000;
+const twitterTimeout = 24 * 60 * 60 * 1000;
 const bskyTimeout = 24 * 60 * 60 * 1000;
 const mastoTimeout = 3 * 60 * 60 * 1000;
 
