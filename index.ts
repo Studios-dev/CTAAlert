@@ -81,15 +81,24 @@ const postUpdatesCronAction = async () => {
 			try {
 				twitterID = await xPost(alertMessage);
 			} catch (e) {
-				console.error("An error occurred while posting to Twitter", e);
-				isTwitterBlocked = {
-					...isTwitterBlocked,
-					versionstamp: "",
-					value: true,
-				};
-				await db.set(["isTwitterBlocked"], true, {
-					expireIn: twitterTimeout,
-				});
+				console.error(
+					"An error occurred while posting to Twitter",
+					e,
+					JSON.stringify(e),
+					typeof e,
+				);
+
+				if (JSON.parse(JSON.stringify(e))?.type != "request") {
+					isTwitterBlocked = {
+						...isTwitterBlocked,
+						versionstamp: "",
+						value: true,
+					};
+					await db.set(["isTwitterBlocked"], true, {
+						expireIn: twitterTimeout,
+					});
+				}
+				
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
 					embeds: [
@@ -98,8 +107,15 @@ const postUpdatesCronAction = async () => {
 								name: "CTAAlert",
 							},
 							title:
-								"Twitter error occured (Potentially blocked)",
-							description: "```" + (e as Error).message + "```",
+								`Twitter error occured (Potentially blocked) ${alert.AlertId}`,
+							description: "```" + (e as Error).message +
+								"```",
+							fields: [
+								{
+									name: "Original Message",
+									value: alertMessage,
+								},
+							],
 						}).setColor("random"),
 					],
 				});
@@ -129,8 +145,15 @@ const postUpdatesCronAction = async () => {
 							author: {
 								name: "CTAAlert",
 							},
-							title: "Bsky error occured",
+							title:
+								`Bsky error occured (Potentially blocked) ${alert.AlertId}`,
 							description: "```" + (e as Error).message + "```",
+							fields: [
+								{
+									name: "Original Message",
+									value: alertMessage,
+								},
+							],
 						}).setColor("random"),
 					],
 				});
@@ -162,8 +185,15 @@ const postUpdatesCronAction = async () => {
 							author: {
 								name: "CTAAlert",
 							},
-							title: "Mastodon error occured",
+							title:
+								`Mastodon error occured (Potentially blocked) ${alert.AlertId}`,
 							description: "```" + (e as Error) + "```",
+							fields: [
+								{
+									name: "Original Message",
+									value: alertMessage,
+								},
+							],
 						}).setColor("random"),
 					],
 				});
@@ -185,7 +215,7 @@ const postUpdatesCronAction = async () => {
 			updatedAlerts.add(alert.AlertId);
 		}
 
-		await sleep(1000 * Math.random());
+		await sleep(2000 - 1000 * Math.random());
 	}
 
 	// We might want to potentially do something about these alerts but I think for now I'm just going to ignore them
@@ -242,3 +272,12 @@ if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
 		somethingsBroken ? () => {} : postUpdatesCronAction,
 	);
 }
+
+// postUpdatesCronAction()
+
+// const alert = "104892";
+// const value = await db.get<Alert>(["alert", alert]);
+// // console.log(value, value.value?.lastMessage);
+
+// value.value!.twitterId = "1884086852388544568"
+// await db.set(["alert", alert], value.value!);
