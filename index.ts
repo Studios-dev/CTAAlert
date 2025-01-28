@@ -88,7 +88,7 @@ const postUpdatesCronAction = async () => {
 					typeof e,
 				);
 
-				if (JSON.parse(JSON.stringify(e))?.type != "request") {
+				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
 					isTwitterBlocked = {
 						...isTwitterBlocked,
 						versionstamp: "",
@@ -97,7 +97,7 @@ const postUpdatesCronAction = async () => {
 					await db.set(["isTwitterBlocked"], true, {
 						expireIn: twitterTimeout,
 					});
-				}
+				//}
 				
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
