@@ -89,16 +89,16 @@ const postUpdatesCronAction = async () => {
 				);
 
 				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
-					isTwitterBlocked = {
-						...isTwitterBlocked,
-						versionstamp: "",
-						value: true,
-					};
-					await db.set(["isTwitterBlocked"], true, {
-						expireIn: twitterTimeout,
-					});
+				isTwitterBlocked = {
+					...isTwitterBlocked,
+					versionstamp: "",
+					value: true,
+				};
+				await db.set(["isTwitterBlocked"], true, {
+					expireIn: twitterTimeout,
+				});
 				//}
-				
+
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
 					embeds: [
