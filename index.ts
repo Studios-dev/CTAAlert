@@ -262,16 +262,17 @@ const postUpdatesCronAction = async () => {
 };
 
 const somethingsBroken = false;
-
-//if (Deno.env.get("DENO_DEPLOYMENT_ID") != undefined) {
-	// Update every 5 minutes
-	// Do nothing if something's broken
-	Deno.cron(
-		"SendUpdates",
-		{ minute: { every: 5 } },
-		somethingsBroken ? () => {} : postUpdatesCronAction,
-	);
-//}
+// Update every 5 minutes
+// Do nothing if something's broken
+Deno.cron(
+	"SendUpdates",
+	{ minute: { every: 5 } },
+	somethingsBroken
+		? () => {}
+		: Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
+		? postUpdatesCronAction
+		: () => {},
+);
 
 // postUpdatesCronAction()
 
