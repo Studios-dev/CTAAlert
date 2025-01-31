@@ -213,9 +213,8 @@ const postUpdatesCronAction = async () => {
 			console.log("Updating alert", alert.AlertId);
 			await db.set(["alert", alert.AlertId], newEntry);
 			updatedAlerts.add(alert.AlertId);
+			await sleep(2000 - 1000 * Math.random());
 		}
-
-		await sleep(2000 - 1000 * Math.random());
 	}
 
 	// We might want to potentially do something about these alerts but I think for now I'm just going to ignore them
@@ -276,9 +275,9 @@ Deno.cron(
 
 // postUpdatesCronAction()
 
-// const alert = "104892";
+// const alert = "105038";
 // const value = await db.get<Alert>(["alert", alert]);
-// // console.log(value, value.value?.lastMessage);
+// console.log(value, value.value?.lastMessage);
 
-// value.value!.twitterId = "1884086852388544568"
+// value.value!.twitterId = "1885124307900113123"
 // await db.set(["alert", alert], value.value!);
