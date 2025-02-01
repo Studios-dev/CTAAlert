@@ -73,7 +73,11 @@ const postUpdatesCronAction = async () => {
 		let bskyID: string | undefined = existingAlert?.bskyId;
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
+		// Twitter is broken on deploy currently
+		const allowTwitter = false
+
 		if (
+			allowTwitter && 
 			isTwitterBlocked.value == undefined &&
 			(twitterID == undefined ||
 				existingAlert?.lastMessage != alertMessage)
@@ -275,9 +279,9 @@ Deno.cron(
 
 // postUpdatesCronAction()
 
-// const alert = "105038";
+// const alert = "105067";
 // const value = await db.get<Alert>(["alert", alert]);
 // console.log(value, value.value?.lastMessage);
 
-// value.value!.twitterId = "1885124307900113123"
+// value.value!.twitterId = "1885486801197924638"
 // await db.set(["alert", alert], value.value!);
