@@ -74,10 +74,10 @@ const postUpdatesCronAction = async () => {
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
 		// Twitter is broken on deploy currently
-		const allowTwitter = Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
+		//const allowTwitter = Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
 
 		if (
-			allowTwitter &&
+			//allowTwitter &&
 			isTwitterBlocked.value == undefined &&
 			(twitterID == undefined ||
 				existingAlert?.lastMessage != alertMessage)
