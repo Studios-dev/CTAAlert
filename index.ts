@@ -74,10 +74,10 @@ const postUpdatesCronAction = async () => {
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
 		// Twitter is broken on deploy currently
-		//const allowTwitter = Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
+		const allowTwitter = Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
 
 		if (
-			//allowTwitter &&
+			allowTwitter &&
 			isTwitterBlocked.value == undefined &&
 			(twitterID == undefined ||
 				existingAlert?.lastMessage != alertMessage)
@@ -279,9 +279,9 @@ Deno.cron(
 
 // postUpdatesCronAction()
 
-// const alert = "105067";
+// const alert = "105381";
 // const value = await db.get<Alert>(["alert", alert]);
 // console.log(value, value.value?.lastMessage);
 
-// value.value!.twitterId = "1885486801197924638"
+// value.value!.twitterId = "1890926583059271811"
 // await db.set(["alert", alert], value.value!);
