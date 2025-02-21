@@ -91,7 +91,7 @@ const postUpdatesCronAction = async () => {
 					typeof e,
 				);
 
-				const timeoutReset = (e as { rateLimit: {reset: number}}).rateLimit.reset
+				const timeoutReset = (e as { rateLimit: {day: {reset: number}}}).rateLimit.day.reset
 				const timeLeft = timeoutReset - (new Date().valueOf() / 1000);
 
 				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
