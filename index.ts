@@ -23,7 +23,6 @@ interface Alert {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const twitterTimeout = 24 * 60 * 60 * 1000;
 const bskyTimeout = 24 * 60 * 60 * 1000;
 const mastoTimeout = 3 * 60 * 60 * 1000;
 
@@ -92,6 +91,9 @@ const postUpdatesCronAction = async () => {
 					typeof e,
 				);
 
+				const timeoutReset = (e as { rateLimit: {reset: number}}).rateLimit.reset
+				const timeLeft = timeoutReset - (new Date().valueOf() / 1000);
+
 				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
 				isTwitterBlocked = {
 					...isTwitterBlocked,
@@ -99,7 +101,8 @@ const postUpdatesCronAction = async () => {
 					value: true,
 				};
 				await db.set(["isTwitterBlocked"], true, {
-					expireIn: twitterTimeout,
+					// Add 1 minute for any potential inaccuracies
+					expireIn: (timeLeft + 60) * 1000,
 				});
 				//}
 
@@ -279,9 +282,9 @@ Deno.cron(
 
 // postUpdatesCronAction()
 
-// const alert = "105381";
+// const alert = "105396";
 // const value = await db.get<Alert>(["alert", alert]);
 // console.log(value, value.value?.lastMessage);
 
-// value.value!.twitterId = "1890926583059271811"
+// value.value!.twitterId = "1891354533978050775"
 // await db.set(["alert", alert], value.value!);
