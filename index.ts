@@ -68,6 +68,15 @@ const postUpdatesCronAction = async () => {
 			continue;
 		}
 
+		if (
+			existingAlert != undefined &&
+			existingAlert.lastMessage != alertMessage
+		) {
+			delete existingAlert.twitterId;
+			delete existingAlert.mastodonId;
+			delete existingAlert.bskyId;
+		}
+
 		let twitterID: string | undefined = existingAlert?.twitterId;
 		let bskyID: string | undefined = existingAlert?.bskyId;
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
@@ -91,7 +100,9 @@ const postUpdatesCronAction = async () => {
 					typeof e,
 				);
 
-				const timeoutReset = (e as { rateLimit: {day: {reset: number}}}).rateLimit.day.reset
+				const timeoutReset =
+					(e as { rateLimit: { day: { reset: number } } }).rateLimit
+						.day.reset;
 				const timeLeft = timeoutReset - (new Date().valueOf() / 1000);
 
 				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
@@ -280,7 +291,9 @@ Deno.cron(
 		: () => {},
 );
 
-// postUpdatesCronAction()
+if (Deno.env.get("DENO_DEPLOYMENT_ID") == undefined) {
+	postUpdatesCronAction();
+}
 
 // const alert = "105396";
 // const value = await db.get<Alert>(["alert", alert]);
