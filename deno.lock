@@ -12,6 +12,7 @@
     "jsr:@std/path@0.217": "0.217.0",
     "npm:@atproto/api@*": "0.13.26",
     "npm:@evan/wasm@0.0.95": "0.0.95",
+    "npm:@types/node@*": "22.5.4",
     "npm:redis@4.6.13": "4.6.13_@redis+client@1.5.14",
     "npm:ts-mixer@6.0.0": "6.0.0",
     "npm:tsl-mastodon-api@*": "0.5.1",
@@ -148,6 +149,12 @@
         "@redis/client"
       ]
     },
+    "@types/node@22.5.4": {
+      "integrity": "sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "await-lock@2.2.2": {
       "integrity": "sha512-aDczADvlvTGajTDjcjpJMqRkOF6Qdz3YbPZm/PyW6tKPkx2hlYBzxMhEywM/tU72HrVZjgl5VCdRuMlA7pZ8Gw=="
     },
@@ -229,6 +236,9 @@
       "dependencies": [
         "multiformats"
       ]
+    },
+    "undici-types@6.19.8": {
+      "integrity": "sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw=="
     },
     "web-streams-polyfill@3.3.3": {
       "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="
