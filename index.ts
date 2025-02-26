@@ -99,11 +99,19 @@ const postUpdatesCronAction = async () => {
 					JSON.stringify(e),
 					typeof e,
 				);
+				
+				// 24 hours
+				let timeLeft = 24 * 60 * 60;
 
-				const timeoutReset =
-					(e as { rateLimit: { day: { reset: number } } }).rateLimit
-						.day.reset;
-				const timeLeft = timeoutReset - (new Date().valueOf() / 1000);
+				try {
+					const timeoutReset =
+						(e as { rateLimit: { day: { reset: number } } })
+							.rateLimit
+							.day.reset;
+					timeLeft = timeoutReset - (new Date().valueOf() / 1000);
+				} catch (e) {
+					console.error("Unknown error occured", e);
+				}
 
 				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
 				isTwitterBlocked = {
