@@ -309,3 +309,21 @@ if (Deno.env.get("DENO_DEPLOYMENT_ID") == undefined) {
 
 // value.value!.twitterId = "1891354533978050775"
 // await db.set(["alert", alert], value.value!);
+
+import { TwitterApi } from "npm:twitter-api-v2";
+
+try {
+	const client = new TwitterApi({
+		// these two values come from your app's API keys
+		appKey: Deno.env.get("TWITTER_APP_KEY")!,
+		appSecret: Deno.env.get("TWITTER_APP_SECRET")!,
+	
+		// these two values come from the user's access tokens
+		accessToken: Deno.env.get("TWITTER_ACCESS_TOKEN")!,
+		accessSecret: Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET")!,
+	});
+	
+	console.log(await client.currentUserV2());
+} catch (e) {
+	console.error(e);
+}
