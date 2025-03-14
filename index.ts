@@ -119,6 +119,9 @@ const postUpdatesCronAction = async () => {
 					versionstamp: "",
 					value: true,
 				};
+
+				console.log("Setting Twitter blocked for", timeLeft, "seconds");
+
 				await db.set(["isTwitterBlocked"], true, {
 					// Add 1 minute for any potential inaccuracies
 					expireIn: (timeLeft + 60) * 1000,
