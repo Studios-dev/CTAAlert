@@ -99,7 +99,7 @@ const postUpdatesCronAction = async () => {
 					JSON.stringify(e),
 					typeof e,
 				);
-				
+
 				// 24 hours
 				let timeLeft = 24 * 60 * 60;
 
@@ -301,6 +301,53 @@ Deno.cron(
 		? postUpdatesCronAction
 		: () => {},
 );
+
+import { TwitterApi } from "npm:twitter-api-v2";
+
+Deno.cron("TestTwitter", {
+	dayOfMonth: { every: 1 },
+}, async () => {
+	const client = new TwitterApi({
+		// these two values come from your app's API keys
+		appKey: Deno.env.get("TWITTER_APP_KEY")!,
+		appSecret: Deno.env.get("TWITTER_APP_SECRET")!,
+
+		// these two values come from the user's access tokens
+		accessToken: Deno.env.get("TWITTER_ACCESS_TOKEN")!,
+		accessSecret: Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET")!,
+	});
+
+	try {
+		console.log(await client.currentUserV2());
+		await hook.send({
+			embeds: [
+				new Embed({
+					author: {
+						name: "Twitter Test",
+					},
+					title: "HOLY SHIT",
+					description: "IT's FINALLY FIXED111!!",
+				}).setColor("random"),
+			],
+			content: "<@!314166178144583682> get on your ass and enable twitter !11",
+			name: "CTAAlert",
+		});
+	} catch (e) {
+		console.error("Twitter still broken:", e);
+		await hook.send({
+			embeds: [
+				new Embed({
+					author: {
+						name: "Twitter Test",
+					},
+					title: "Yep",
+					description: "still broken",
+				}).setColor("random"),
+			],
+			name: "CTAAlert",
+		});
+	}
+});
 
 if (Deno.env.get("DENO_DEPLOYMENT_ID") == undefined) {
 	postUpdatesCronAction();
