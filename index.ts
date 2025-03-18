@@ -310,8 +310,11 @@ Deno.cron(
 	{
 		hour: { every: 6 },
 	},
-	Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
+	somethingsBroken
+		? () => {}
+		: Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
 		? async () => {
+			console.log("Testing Twitter");
 			const client = new TwitterApi({
 				appKey: Deno.env.get("TWITTER_APP_KEY")!,
 				appSecret: Deno.env.get("TWITTER_APP_SECRET")!,
@@ -350,6 +353,8 @@ Deno.cron(
 					name: "CTAAlert",
 				});
 			}
+
+			console.log("Twitter test completed");
 		}
 		: () => {},
 );
