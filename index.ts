@@ -82,7 +82,8 @@ const postUpdatesCronAction = async () => {
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
 		// Twitter is broken on deploy currently
-		const allowTwitter = Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
+		// 3/20/2025 - Twitter seems to be fixed, deploying and monitoring
+		const allowTwitter = true //Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
 
 		if (
 			allowTwitter &&
