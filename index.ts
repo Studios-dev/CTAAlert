@@ -81,12 +81,7 @@ const postUpdatesCronAction = async () => {
 		let bskyID: string | undefined = existingAlert?.bskyId;
 		let mastodonID: string | undefined = existingAlert?.mastodonId;
 
-		// Twitter is broken on deploy currently
-		// 3/20/2025 - Twitter seems to be fixed, deploying and monitoring
-		const allowTwitter = true //Deno.env.get("DENO_DEPLOYMENT_ID") == undefined;
-
 		if (
-			allowTwitter &&
 			isTwitterBlocked.value == undefined &&
 			(twitterID == undefined ||
 				existingAlert?.lastMessage != alertMessage)
@@ -300,63 +295,6 @@ Deno.cron(
 		? () => {}
 		: Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
 		? postUpdatesCronAction
-		: () => {},
-);
-
-// Add check for twitter being fixed on deploy so I can re-enable it
-import { TwitterApi } from "npm:twitter-api-v2";
-
-Deno.cron(
-	"TestTwitter",
-	{
-		hour: { every: 6 },
-	},
-	somethingsBroken
-		? () => {}
-		: Deno.env.get("DENO_DEPLOYMENT_ID") != undefined
-		? async () => {
-			console.log("Testing Twitter");
-			const client = new TwitterApi({
-				appKey: Deno.env.get("TWITTER_APP_KEY")!,
-				appSecret: Deno.env.get("TWITTER_APP_SECRET")!,
-				accessToken: Deno.env.get("TWITTER_ACCESS_TOKEN")!,
-				accessSecret: Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET")!,
-			});
-
-			try {
-				console.log(await client.currentUserV2());
-				await hook.send({
-					embeds: [
-						new Embed({
-							author: {
-								name: "Twitter Test",
-							},
-							title: "HOLY SHIT",
-							description: "IT's FINALLY FIXED111!!",
-						}).setColor("random"),
-					],
-					content:
-						"<@!314166178144583682> get on your ass and enable twitter !11",
-					name: "CTAAlert",
-				});
-			} catch (e) {
-				console.error("Twitter still broken:", e);
-				await hook.send({
-					embeds: [
-						new Embed({
-							author: {
-								name: "Twitter Test",
-							},
-							title: "Yep",
-							description: "still broken",
-						}).setColor("random"),
-					],
-					name: "CTAAlert",
-				});
-			}
-
-			console.log("Twitter test completed");
-		}
 		: () => {},
 );
 
