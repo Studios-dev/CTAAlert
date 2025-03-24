@@ -109,7 +109,6 @@ const postUpdatesCronAction = async () => {
 					console.error("Unknown error occured", e);
 				}
 
-				//if (JSON.parse(JSON.stringify(e))?.type != "request") {
 				isTwitterBlocked = {
 					...isTwitterBlocked,
 					versionstamp: "",
@@ -122,7 +121,11 @@ const postUpdatesCronAction = async () => {
 					// Add 1 minute for any potential inaccuracies
 					expireIn: (timeLeft + 60) * 1000,
 				});
-				//}
+
+				const timestampValue = (new Date().getTime() / 1000 + timeLeft)
+					.toFixed(
+						0,
+					);
 
 				await hook.send({
 					content: "<@!314166178144583682> Error occured",
@@ -133,7 +136,9 @@ const postUpdatesCronAction = async () => {
 							},
 							title:
 								`Twitter error occured (Potentially blocked) ${alert.AlertId}`,
-							description: "```" + (e as Error).message +
+							description: "Account will be unblocked <t:" +
+								timestampValue + ":R>\n```" +
+								(e as Error).message +
 								"```",
 							fields: [
 								{
