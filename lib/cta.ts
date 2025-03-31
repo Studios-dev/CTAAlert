@@ -4,6 +4,7 @@ export type CTARouteStatus =
 	| "Normal Service"
 	| "Service Disruption"
 	| "Planned Reroute"
+	| "Planned Work w/Station(s) Bypassed"
 	| "Bus Stop Note"
 	| "Minor Delays / Reroute"
 	| "Service Change"
