@@ -1,12 +1,14 @@
 {
-  "version": "4",
+  "version": "5",
   "specifiers": {
     "jsr:@denosaurs/event@2.0.2": "2.0.2",
+    "jsr:@gfx/canvas-wasm@*": "0.4.2",
     "jsr:@harmony/harmony@*": "2.9.1",
     "jsr:@std/assert@0.217": "0.217.0",
     "jsr:@std/bytes@0.217": "0.217.0",
     "jsr:@std/dotenv@*": "0.225.2",
     "jsr:@std/encoding@0.217": "0.217.0",
+    "jsr:@std/encoding@1.0.5": "1.0.5",
     "jsr:@std/fs@0.217": "0.217.0",
     "jsr:@std/io@0.217": "0.217.0",
     "jsr:@std/path@0.217": "0.217.0",
@@ -22,11 +24,17 @@
     "@denosaurs/event@2.0.2": {
       "integrity": "3310ba1a9e94dd60ccb09c6084fc818cc1cd50e543c56ef0c6199f1b89073392"
     },
+    "@gfx/canvas-wasm@0.4.2": {
+      "integrity": "d653be3bd12cb2fa9bbe5d1b1f041a81b91d80b68502761204aaf60e4592532a",
+      "dependencies": [
+        "jsr:@std/encoding@1.0.5"
+      ]
+    },
     "@harmony/harmony@2.9.1": {
       "integrity": "ffa5283d3df25b492a6eeb33607fcd9f1a9c18b1ec1b0f7c8e396f9839c5f1ec",
       "dependencies": [
         "jsr:@denosaurs/event",
-        "jsr:@std/encoding",
+        "jsr:@std/encoding@0.217",
         "jsr:@std/fs",
         "jsr:@std/io",
         "npm:@evan/wasm",
@@ -45,6 +53,9 @@
     },
     "@std/encoding@0.217.0": {
       "integrity": "b03e8ff94c98d6b6a02c02c5cf8e5d203400155516248964fc4559abc04669dc"
+    },
+    "@std/encoding@1.0.5": {
+      "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
     },
     "@std/fs@0.217.0": {
       "integrity": "0bfff5f3618d68c385b28b4ffbf3a15c98293a0f1186444458b62e0111ce77b2",
@@ -215,14 +226,15 @@
       ]
     },
     "tlds@1.255.0": {
-      "integrity": "sha512-tcwMRIioTcF/FcxLev8MJWxCp+GUALRhFEqbDoZrnowmKSGqPrl5pqS+Sut2m8BgJ6S4FExCSSpGffZ0Tks6Aw=="
+      "integrity": "sha512-tcwMRIioTcF/FcxLev8MJWxCp+GUALRhFEqbDoZrnowmKSGqPrl5pqS+Sut2m8BgJ6S4FExCSSpGffZ0Tks6Aw==",
+      "bin": true
     },
     "ts-mixer@6.0.0": {
       "integrity": "sha512-nXIb1fvdY5CBSrDIblLn73NW0qRDk5yJ0Sk1qPBF560OdJfQp9jhl+0tzcY09OZ9U+6GpeoI9RjwoIKFIoB9MQ=="
     },
     "tsl-mastodon-api@0.5.1": {
       "integrity": "sha512-YdRcQ2UWYZY3dRvljc5OAzl/A935zbW4pFiRsLAUrc51BIS381wLuDi4sDiQrivID0yoi9pOjwIQlOz9WkWWcA==",
-      "dependencies": [
+      "optionalDependencies": [
         "node-fetch",
         "oauth",
         "ws"
@@ -244,7 +256,11 @@
       "integrity": "sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw=="
     },
     "ws@8.18.0": {
-      "integrity": "sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw=="
+      "integrity": "sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==",
+      "optionalPeers": [
+        "bufferutil@^4.0.1",
+        "utf-8-validate@>=5.0.2"
+      ]
     },
     "yallist@4.0.0": {
       "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A=="
