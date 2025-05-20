@@ -6,7 +6,6 @@ import {
 } from "jsr:@gfx/canvas-wasm";
 import { COLORS, RouteStatusToColor } from "./lib/colors.ts";
 import { stationToAbbreviation } from "./lib/cta.ts";
-
 const margin = 20;
 
 const icons = {
@@ -41,14 +40,25 @@ const roundRect = function (
 	ctx.fillStyle = prevFillStyle;
 };
 
+const convertDateToCorrectFormat = (date: Date) => {
+	let amPM = "am";
+	let hours = date.getHours();
+
+	if (hours > 12) {
+		amPM = "pm";
+		hours = date.getHours() - 12;
+	} else if (date.getHours() == 0) {
+		hours = 12;
+	}
+
+	return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${date.getMinutes().toString().padStart(2, "0")}${amPM}`;
+};
+
 export function drawIcon(data: {
 	type: "train";
 	line: keyof typeof COLORS;
 }): EmulatedCanvas2D;
-export function drawIcon(data: {
-	type: "bus";
-	line: string;
-}): EmulatedCanvas2D;
+export function drawIcon(data: { type: "bus"; line: string }): EmulatedCanvas2D;
 export function drawIcon(data: {
 	type: "platform";
 	line: keyof typeof COLORS;
@@ -107,7 +117,7 @@ export function drawIcon({
 		const text =
 			type == "bus"
 				? line
-				: stationToAbbreviation[name!] ?? name?.substring(0, 3);
+				: (stationToAbbreviation[name!] ?? name?.substring(0, 3));
 		ctx.font = "bold 60px sans-serif";
 		const length = ctx.measureText(text.replace(/./g, "9")).width;
 		const label = createCanvas(length + margin, 70);
@@ -127,48 +137,170 @@ export function drawIcon({
 		);
 	}
 
-	return canvas
+	return canvas;
 }
 
-export const generateAlertImage = async () => {
+export const generateAlertImage = async (
+	text: keyof typeof RouteStatusToColor,
+	eventStart: string = "2025-05-02T22:37:00",
+	eventEnd?: string
+) => {
+	// Top Bar
 	const titleBar = createCanvas(1200, 176);
 	const titleBarCtx = titleBar.getContext("2d");
 
-	titleBarCtx.font = "bold 100px sans-serif";
-	titleBarCtx.fillStyle = RouteStatusToColor["Minor Delays"];
+	titleBarCtx.fillStyle = RouteStatusToColor[text];
 	titleBarCtx.fillRect(0, 0, titleBar.width, titleBar.height);
+	titleBarCtx.font = "bold 70px sans-serif";
 	titleBarCtx.fillStyle = "white";
+	titleBarCtx.textAlign = "right";
 
-	const text = "Planned Work w/Station(s) Bypassed";
-	const length = titleBarCtx.measureText(text.replace(/./g, "9")).width;
-	titleBarCtx.fillText(text, margin, titleBar.height / 2 + 36);
+	const textWidth = 1200 - 400 - margin;
+	const length = titleBarCtx.measureText(text).width;
 
-	const remainingWidth = titleBar.width - length - margin;
+	if (length >= textWidth) {
+		const words = text.split(/ /g);
+
+		for (let i = 0; i < words.length; i++) {
+			const word = words[i];
+			if (word.startsWith("w/")) {
+				words[i - 1] += " with";
+				words[i] = word.substring(2);
+			}
+		}
+
+		titleBarCtx.font = "bold 60px sans-serif";
+		const lines = [
+			words.slice(0, Math.ceil(words.length / 2)).join(" "),
+			words.slice(Math.ceil(words.length / 2)).join(" "),
+		];
+		titleBarCtx.fillText(lines[0], margin, 75);
+		titleBarCtx.fillText(lines[1], margin, titleBar.height / 2 + 60);
+	} else {
+		titleBarCtx.fillText(text, margin, titleBar.height / 2 + 25);
+	}
+
+	const iconsCanvas = createCanvas(400, titleBar.height);
+	const iconsCtx = iconsCanvas.getContext("2d");
+
 	const icons = [
-		await drawIcon({ type: "train", line: "RED" }),
-		await drawIcon({ type: "train", line: "BLUE" }),
-		await drawIcon({ type: "train", line: "GREEN" }),
-		await drawIcon({ type: "train", line: "PINK" }),
-	];
+		drawIcon({ type: "train", line: "RED" }),
+		drawIcon({ type: "train", line: "BROWN" }),
+		drawIcon({ type: "train", line: "GREEN" }),
+		drawIcon({ type: "train", line: "PINK" }),
+		drawIcon({ type: "train", line: "ORANGE" }),
+		drawIcon({ type: "train", line: "PURPLE" }),
+		drawIcon({ type: "platform", line: "BLUE", name: "O'HARE" }),
+		drawIcon({ type: "train", line: "YELLOW" }),
+	].slice(0, Math.floor(Math.random() * 8) + 1);
 
-	const iconSize = 100;
+	const iconSize = 128;
 
-	// Draw all icons in the remaining space with them overlapping if needed
+	const lastIcon = icons.shift()!;
+	iconsCtx.drawImage(
+		lastIcon,
+		iconsCanvas.width - margin - iconSize,
+		iconsCanvas.height / 2 - iconSize / 2,
+		iconSize,
+		iconSize
+	);
+
+	const iconMargin = Math.min(
+		iconSize + margin,
+		(iconsCanvas.width - margin - iconSize) / icons.length
+	);
+
 	for (let i = 0; i < icons.length; i++) {
 		const icon = icons[i];
-		const x = length + margin + remainingWidth / (icons.length + 1) * (i + 1) - iconSize / 2;
-		const y = titleBar.height / 2 - iconSize / 2;
-
-		titleBarCtx.drawImage(
+		const x = (i + 1) * iconMargin;
+		iconsCtx.drawImage(
 			icon,
-			x,
-			y,
+			iconsCanvas.width - margin - iconSize - x,
+			iconsCanvas.height / 2 - iconSize / 2,
 			iconSize,
 			iconSize
 		);
 	}
 
-	return await titleBar.toBuffer("image/png");
+	titleBarCtx.drawImage(
+		iconsCanvas,
+		titleBar.width - iconsCanvas.width,
+		0,
+		iconsCanvas.width,
+		iconsCanvas.height
+	);
+
+	// Bottom Bar
+
+	const bottomBar = createCanvas(1200, 100);
+	const bottomBarCtx = bottomBar.getContext("2d");
+
+	const eventStartText =
+		eventStart == null
+			? "TBD"
+			: convertDateToCorrectFormat(new Date(eventStart));
+	let eventEndText =
+		eventEnd == null ? "TBD" : convertDateToCorrectFormat(new Date(eventEnd));
+
+	if (eventEnd != undefined && eventStart != undefined) {
+		const [startDate] = eventStartText.split(" ");
+		const [endDate, ...rest] = eventEndText.split(" ");
+
+		if (startDate == endDate) {
+			eventEndText = rest.join(" ");
+		}
+	}
+
+	bottomBarCtx.fillStyle = "#000000";
+	bottomBarCtx.fillRect(0, 0, bottomBar.width, bottomBar.height);
+	bottomBarCtx.fillStyle = "white";
+	bottomBarCtx.font = "bold 40px sans-serif";
+	bottomBarCtx.textAlign = "left";
+	bottomBarCtx.fillText(
+		`Service Affected ${eventStartText} - ${eventEndText}`,
+		margin,
+		bottomBar.height / 2 + 15
+	);
+
+	// Center Content	
+	const centerCanvas = createCanvas(1200, 800);
+
+	// Final Canvas
+
+	const finalCanvas = createCanvas(
+		1200,
+		titleBar.height + centerCanvas.height + bottomBar.height
+	);
+	const finalCtx = finalCanvas.getContext("2d");
+	finalCtx.fillStyle = "#FFFFFF";
+	finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+	finalCtx.drawImage(titleBar, 0, 0, titleBar.width, titleBar.height);
+
+	finalCtx.drawImage(
+		centerCanvas,
+		0,
+		titleBar.height,
+		centerCanvas.width,
+		centerCanvas.height
+	);
+
+	finalCtx.drawImage(
+		bottomBar,
+		0,
+		finalCanvas.height - bottomBar.height,
+		bottomBar.width,
+		bottomBar.height
+	);
+
+	return await finalCanvas.toBuffer("image/png");
 };
 
-await Deno.writeFile("./assets/out.png", await generateAlertImage());
+await Deno.writeFile(
+	"./assets/out.png",
+	await generateAlertImage(
+		"Service Disruption",
+		"2025-05-02T22:37:00",
+		"2025-05-05T22:38:00"
+	)
+);
