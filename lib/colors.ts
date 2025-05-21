@@ -29,4 +29,5 @@ export const RouteStatusToColor: Record<CTARouteStatus, string> = {
 	"Minor Delays": COLORS.ORANGE,
 	"Elevator Status": COLORS.GREY,
 	"Special Note": COLORS.GREY,
+	"Service Suspended": COLORS.RED,
 };

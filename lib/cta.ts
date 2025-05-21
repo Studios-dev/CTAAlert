@@ -13,7 +13,8 @@ export type CTARouteStatus =
 	| "Significant Delays"
 	| "Special Note"
 	| "Minor Delays"
-	| "Elevator Status";
+	| "Elevator Status"
+	| "Service Suspended";
 
 export type CTASeverity = "normal" | "major" | "minor" | "planned";
 /** B = Bus, T = Train Station, R = Train Route, X = Systemwide */
