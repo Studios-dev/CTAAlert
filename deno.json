@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@atproto/api": "npm:@atproto/api@^0.15.19",
+    "@harmony/harmony": "jsr:@harmony/harmony@^2.9.1",
+    "tsl-mastodon-api": "npm:tsl-mastodon-api@^0.5.1",
+    "twitter-api-v2": "npm:twitter-api-v2@^1.24.0"
+  }
+}
