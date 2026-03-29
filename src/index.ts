@@ -19,29 +19,31 @@ const postErrorMessage = async (
 ) => {
 	const timestampValue = (Date.now() / 1000 + ratelimitTimeout).toFixed(0);
 
-	const webhookSend = await tryOrFail(webhook.send({
-		content: "<@!314166178144583682> Error occured",
-		embeds: [
-			new Embed({
-				author: {
-					name: "CTAAlert",
-				},
-				title: `${platform} error occured (Potentially blocked) ${alertID}`,
-				description:
-					"Account will be unblocked <t:" +
-					timestampValue +
-					":R>\n```" +
-					(error as Error).message +
-					"```",
-				fields: [
-					{
-						name: "Original Message",
-						value: alertMessage,
+	const webhookSend = await tryOrFail(
+		webhook.send({
+			content: "<@!314166178144583682> Error occured",
+			embeds: [
+				new Embed({
+					author: {
+						name: "CTAAlert",
 					},
-				],
-			}).setColor("random"),
-		],
-	}));
+					title: `${platform} error occured (Potentially blocked) ${alertID}`,
+					description:
+						"Account will be unblocked <t:" +
+						timestampValue +
+						":R>\n```" +
+						(error as Error).message +
+						"```",
+					fields: [
+						{
+							name: "Original Message",
+							value: alertMessage,
+						},
+					],
+				}).setColor("random"),
+			],
+		}),
+	);
 
 	if (!webhookSend.success) {
 		console.error(
