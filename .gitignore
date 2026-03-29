@@ -1,5 +1,5 @@
 # Ignore Environment files
-*.env
+.env*
 !.env.example
 
 # Ignore system files
@@ -7,3 +7,6 @@
 
 # Ignore temporary files
 old
+
+node_modules
+.wrangler

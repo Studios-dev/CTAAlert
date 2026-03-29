@@ -1,0 +1,33 @@
+{
+	"name": "ctaalert",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --test-scheduled",
+		"start": "wrangler dev --test-scheduled",
+		"cf-typegen": "wrangler types",
+		"push": "drizzle-kit push",
+		"studio": "drizzle-kit studio"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.15.0",
+	"devDependencies": {
+		"@types/node": "^25.5.0",
+		"drizzle-kit": "^0.31.10",
+		"tsx": "^4.21.0",
+		"typescript": "^6.0.2",
+		"wrangler": "^4.78.0"
+	},
+	"dependencies": {
+		"@atproto/api": "^0.19.5",
+		"@harmony/harmony": "jsr:^2.9.1",
+		"dotenv": "^17.3.1",
+		"drizzle-orm": "^0.45.2",
+		"masto": "^7.10.2",
+		"twitter-api-v2": "^1.29.0"
+	}
+}
