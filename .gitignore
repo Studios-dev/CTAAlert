@@ -1,3 +1,12 @@
-.env
-alerts.txt
+# Ignore Environment files
+.env*
+!.env.example
+
+# Ignore system files
 .DS_Store
+
+# Ignore temporary files
+old
+
+node_modules
+.wrangler

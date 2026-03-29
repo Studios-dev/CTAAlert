@@ -1,4 +1,8 @@
-import { CTA_ALERT_URL } from "./consts.ts";
+export const CTA_API_URL_BASE = "https://www.transitchicago.com/api/1.0";
+
+export const CTA_ALERT_URL = `${CTA_API_URL_BASE}/alerts.aspx?outputType=JSON`;
+
+export const CTA_STATUS_URL = `${CTA_API_URL_BASE}/routes.aspx?outputType=JSON`;
 
 export type CTARouteStatus =
 	| "Normal Service"
@@ -69,13 +73,6 @@ export interface CTAAlertStatusResponse {
 	};
 }
 
-export const getCTAAlerts = async (): Promise<CTAAlertStatusResponse> => {
-	const req = await fetch(CTA_ALERT_URL);
-	const res = await req.json();
-
-	return res;
-};
-
 export interface CTAStatusResponse {
 	CTARoutes: {
 		TimeStamp: string;
@@ -94,13 +91,6 @@ export interface CTAStatusResponse {
 		}[];
 	};
 }
-
-export const getCTAStatus = async (): Promise<CTAStatusResponse> => {
-	const req = await fetch(CTA_ALERT_URL);
-	const res = await req.json();
-
-	return res;
-};
 
 // Need to figure out how the API returns FP and ORD branch stations for Harlem & Western
 export const stationToAbbreviation = {
