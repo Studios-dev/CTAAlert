@@ -67,6 +67,7 @@ export default {
 	},
 
 	async scheduled() {
+		console.log("Performing CTA Alert check...");
 		const drizzle = getDrizzle();
 		const webhook = await Webhook.fromURL(env.DISCORD_WEBHOOK_URL);
 
@@ -80,6 +81,8 @@ export default {
 		);
 
 		const alertIDs = alerts.map((alert) => alert.AlertId);
+
+		console.log(`Fetched ${alerts.length} alerts from CTA API. Checking for updates...`);
 
 		const ratelimitedPlatforms = await drizzle.query.ratelimit.findMany({
 			where: () => lte(schema.ratelimit.resetTime, new Date()),
@@ -280,6 +283,6 @@ export default {
 
 		// TODO (tbd): Do we do cleanup of existing alerts that are no longer returned by the API? - Bloxs
 
-		console.log("Cron ran");
+		console.log(`CTA Alert check completed. ${alertInfo.length} alerts created/updated.`);
 	},
 };
