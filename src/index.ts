@@ -82,7 +82,9 @@ export default {
 
 		const alertIDs = alerts.map((alert) => alert.AlertId);
 
-		console.log(`Fetched ${alerts.length} alerts from CTA API. Checking for updates...`);
+		console.log(
+			`Fetched ${alerts.length} alerts from CTA API. Checking for updates...`,
+		);
 
 		const ratelimitedPlatforms = await drizzle.query.ratelimit.findMany({
 			where: () => lte(schema.ratelimit.resetTime, new Date()),
@@ -259,30 +261,34 @@ export default {
 			}
 		}
 
-		await tryOrFail(
-			webhook.send({
-				embeds: [
-					new Embed({
-						author: {
-							name: "CTAAlert",
-						},
-						title: "Alerts updated",
-						fields: alertInfo.slice(0, 25).map((info) => ({
-							name: `${info.updateType.toUpperCase()}: ${info.alertID}`,
-							value: `\`\`\`\n\t${info.content}\n\`\`\``,
-							inline: true,
-						})),
-						footer: {
-							text: `Total alerts updated: ${alertInfo.length}`,
-						},
-					}).setColor("random"),
-				],
-				name: "CTAAlert",
-			}),
-		);
+		if (alertInfo.length > 0) {
+			await tryOrFail(
+				webhook.send({
+					embeds: [
+						new Embed({
+							author: {
+								name: "CTAAlert",
+							},
+							title: "Alerts updated",
+							fields: alertInfo.slice(0, 25).map((info) => ({
+								name: `${info.updateType.toUpperCase()}: ${info.alertID}`,
+								value: `\`\`\`\n\t${info.content}\n\`\`\``,
+								inline: true,
+							})),
+							footer: {
+								text: `Total alerts updated: ${alertInfo.length}`,
+							},
+						}).setColor("random"),
+					],
+					name: "CTAAlert",
+				}),
+			);
+		}
 
 		// TODO (tbd): Do we do cleanup of existing alerts that are no longer returned by the API? - Bloxs
 
-		console.log(`CTA Alert check completed. ${alertInfo.length} alerts created/updated.`);
+		console.log(
+			`CTA Alert check completed. ${alertInfo.length} alerts created/updated.`,
+		);
 	},
 };
