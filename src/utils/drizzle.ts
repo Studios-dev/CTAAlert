@@ -9,7 +9,7 @@ let drizzleInstance: ReturnType<typeof drizzleClient<typeof schema, D1Database>>
 export const getDrizzle = () => {
 	if (drizzleInstance !== null) return drizzleInstance;
 
-	drizzleInstance ??= drizzleClient(env.alerts, {
+	drizzleInstance ??= drizzleClient(env.ctaalert, {
 		casing: "snake_case",
 		schema,
 	});

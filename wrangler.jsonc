@@ -17,9 +17,9 @@
 	],
 	"d1_databases": [
 		{
-			"binding": "alerts",
-			"database_name": "alerts",
-			"database_id": "a4c5f869-5743-4fdf-a00c-508eacef4389",
+			"binding": "ctaalert",
+			"database_name": "ctaalert",
+			"database_id": "a0831426-ed9d-4bcf-bc8d-de2ba5115185",
 			"remote": true
 		}
 	],
