@@ -6,11 +6,18 @@ import { Embed } from "./utils/discord/embed.ts";
 import { Webhook } from "./utils/discord/webhook.ts";
 import { getDrizzle, schema } from "./utils/drizzle.ts";
 import { postMastodon } from "./utils/mastodon.ts";
-import { tryOrFail } from "./utils/misc.ts";
+import { titleCase, tryOrFail } from "./utils/misc.ts";
 import { postTwitter } from "./utils/twitter.ts";
 
+let webhook: Webhook | undefined;
+
+export const initializeWebhook = async (): Promise<Webhook> => {
+	if (webhook !== undefined) return webhook;
+	webhook = await Webhook.fromURL(env.DISCORD_WEBHOOK_URL);
+	return webhook;
+};
+
 const postErrorMessage = async (
-	webhook: Webhook,
 	platform: string,
 	alertID: string,
 	alertMessage: string,
@@ -18,6 +25,7 @@ const postErrorMessage = async (
 	ratelimitTimeout: number,
 ) => {
 	const timestampValue = (Date.now() / 1000 + ratelimitTimeout).toFixed(0);
+	const webhook = await initializeWebhook();
 
 	const webhookSend = await tryOrFail(
 		webhook.send({
@@ -69,7 +77,6 @@ export default {
 	async scheduled() {
 		console.log("Performing CTA Alert check...");
 		const drizzle = getDrizzle();
-		const webhook = await Webhook.fromURL(env.DISCORD_WEBHOOK_URL);
 
 		let {
 			CTAAlerts: { Alert: alerts },
@@ -158,7 +165,6 @@ export default {
 
 					await tryOrFail(
 						postErrorMessage(
-							webhook,
 							"Twitter",
 							alert.AlertId,
 							alertMessage,
@@ -185,7 +191,6 @@ export default {
 
 					await tryOrFail(
 						postErrorMessage(
-							webhook,
 							"Bluesky",
 							alert.AlertId,
 							alertMessage,
@@ -212,7 +217,6 @@ export default {
 
 					await tryOrFail(
 						postErrorMessage(
-							webhook,
 							"Mastodon",
 							alert.AlertId,
 							alertMessage,
@@ -262,6 +266,7 @@ export default {
 		}
 
 		if (alertInfo.length > 0) {
+			const webhook = await initializeWebhook();
 			await tryOrFail(
 				webhook.send({
 					embeds: [
@@ -271,8 +276,8 @@ export default {
 							},
 							title: "Alerts updated",
 							fields: alertInfo.slice(0, 25).map((info) => ({
-								name: `${info.updateType.toUpperCase()}: ${info.alertID}`,
-								value: `\`\`\`\n\t${info.content}\n\`\`\``,
+								name: `${titleCase(info.updateType)}: ${info.alertID}`,
+								value: `\`\`\`\n${info.content}\n\`\`\``,
 								inline: true,
 							})),
 							footer: {

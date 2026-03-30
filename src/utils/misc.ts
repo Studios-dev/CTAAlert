@@ -15,3 +15,12 @@ export const tryOrFail = async <T>(
 		return { success: false, data: null, error: e as Error };
 	}
 };
+
+export const titleCase = (str: string): string =>
+	str
+		.split(" ")
+		.map(
+			(str) =>
+				str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase(),
+		)
+		.join(" ");
