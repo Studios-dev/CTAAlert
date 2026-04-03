@@ -24,7 +24,7 @@ const postErrorMessage = async (
 	error: Error,
 	ratelimitTimeout: number,
 ) => {
-	const timestampValue = (Date.now() / 1000 + ratelimitTimeout).toFixed(0);
+	const timestampValue = ((Date.now() + ratelimitTimeout) / 1000).toFixed(0);
 	const webhook = await initializeWebhook();
 
 	const webhookSend = await tryOrFail(
