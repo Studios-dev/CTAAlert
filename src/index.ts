@@ -278,7 +278,6 @@ export default {
 							fields: alertInfo.slice(0, 25).map((info) => ({
 								name: `${titleCase(info.updateType)}: ${info.alertID}`,
 								value: `\`\`\`\n${info.content}\n\`\`\``,
-								inline: true,
 							})),
 							footer: {
 								text: `Total alerts updated: ${alertInfo.length}`,
