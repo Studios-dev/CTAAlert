@@ -279,7 +279,7 @@ export default {
 							title: "Alerts updated",
 							fields: alertInfo.slice(0, 25).map((info) => ({
 								name: `${titleCase(info.updateType)}: ${info.alertID}`,
-								value: `[${info.link}](${info.link})\n\`\`\`\n${info.content}\n\`\`\``,
+								value: `${info.link}\n\`\`\`\n${info.content.substring(0, info.content.lastIndexOf(info.link)).trim()}\n\`\`\``,
 							})),
 							footer: {
 								text: `Total alerts updated: ${alertInfo.length}`,
