@@ -111,6 +111,7 @@ export default {
 			content: string;
 			alertID: string;
 			updateType: "created" | "updated" | "deleted";
+			link: string;
 		}[] = [];
 
 		for (const alert of alerts) {
@@ -235,6 +236,7 @@ export default {
 					content: alertMessage,
 					alertID: alert.AlertId,
 					updateType: createdOrUpdated,
+					link: alert.AlertURL["#cdata-section"],
 				});
 
 				console.log(
@@ -277,7 +279,7 @@ export default {
 							title: "Alerts updated",
 							fields: alertInfo.slice(0, 25).map((info) => ({
 								name: `${titleCase(info.updateType)}: ${info.alertID}`,
-								value: `\`\`\`\n${info.content}\n\`\`\``,
+								value: `[${info.link}](${info.link})\n\`\`\`\n${info.content}\n\`\`\``,
 							})),
 							footer: {
 								text: `Total alerts updated: ${alertInfo.length}`,
