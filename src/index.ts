@@ -103,6 +103,12 @@ export default {
 			ratelimitedPlatforms.some((r) => r.platform === "bluesky"),
 		];
 
+		if ([twitterBlocked, mastodonBlocked, blueskyBlocked].some((r) => r)) {
+			console.log(
+				`Currently ratelimited: Twitter: ${twitterBlocked ? "Y" : "N"}, Mastodon: ${mastodonBlocked ? "Y" : "N"}, Bluesky: ${blueskyBlocked ? "Y" : "N"}`,
+			);
+		}
+
 		const existingAlerts = await drizzle.query.alert.findMany({
 			where: () => inArray(schema.alert.id, alertIDs),
 		});
@@ -277,6 +283,14 @@ export default {
 								name: "CTAAlert",
 							},
 							title: "Alerts updated",
+							description: [
+								twitterBlocked,
+								mastodonBlocked,
+								blueskyBlocked,
+							].some((r) => r)
+								? `Currently ratelimited: Twitter: ${twitterBlocked ? "Y" : "N"}, Mastodon: ${mastodonBlocked ? "Y" : "N"}, Bluesky: ${blueskyBlocked ? "Y" : "N"}`
+								: undefined,
+
 							fields: alertInfo.slice(0, 25).map((info) => ({
 								name: `${titleCase(info.updateType)}: ${info.alertID}`,
 								value: `${info.link}\n\`\`\`\n${info.content.substring(0, info.content.lastIndexOf(info.link)).trim()}\n\`\`\``,
