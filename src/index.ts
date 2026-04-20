@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { inArray, lte } from "drizzle-orm";
+import { inArray, gte } from "drizzle-orm";
 import { postBluesky } from "./utils/bluesky.ts";
 import { getCTAAlerts } from "./utils/cta/index.ts";
 import { Embed } from "./utils/discord/embed.ts";
@@ -94,7 +94,7 @@ export default {
 		);
 
 		const ratelimitedPlatforms = await drizzle.query.ratelimit.findMany({
-			where: () => lte(schema.ratelimit.resetTime, new Date()),
+			where: () => gte(schema.ratelimit.resetTime, new Date()),
 		});
 
 		let [twitterBlocked, mastodonBlocked, blueskyBlocked] = [
