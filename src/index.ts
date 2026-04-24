@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { inArray, gte } from "drizzle-orm";
+import { inArray, gte, sql } from "drizzle-orm";
 import { postBluesky } from "./utils/bluesky.ts";
 import { getCTAAlerts } from "./utils/cta/index.ts";
 import { Embed } from "./utils/discord/embed.ts";
@@ -171,7 +171,7 @@ export default {
 					}).onConflictDoUpdate({
 						target: schema.ratelimit.platform,
 						set: {
-							resetTime: new Date(Date.now() + post.ratelimitTimeout),
+							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
 						},
 					});
 
@@ -199,6 +199,11 @@ export default {
 					await drizzle.insert(schema.ratelimit).values({
 						platform: "bluesky",
 						resetTime: new Date(Date.now() + post.ratelimitTimeout),
+					}).onConflictDoUpdate({
+						target: schema.ratelimit.platform,
+						set: {
+							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
+						},
 					});
 
 					await tryOrFail(
@@ -225,6 +230,11 @@ export default {
 					await drizzle.insert(schema.ratelimit).values({
 						platform: "mastodon",
 						resetTime: new Date(Date.now() + post.ratelimitTimeout),
+					}).onConflictDoUpdate({
+						target: schema.ratelimit.platform,
+						set: {
+							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
+						},
 					});
 
 					await tryOrFail(
