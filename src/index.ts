@@ -168,6 +168,11 @@ export default {
 					await drizzle.insert(schema.ratelimit).values({
 						platform: "twitter",
 						resetTime: new Date(Date.now() + post.ratelimitTimeout),
+					}).onConflictDoUpdate({
+						target: schema.ratelimit.platform,
+						set: {
+							resetTime: new Date(Date.now() + post.ratelimitTimeout),
+						},
 					});
 
 					await tryOrFail(
