@@ -1,12 +1,12 @@
 import { env } from "cloudflare:workers";
-import { inArray, gte, sql } from "drizzle-orm";
+import { gte, inArray, sql } from "drizzle-orm";
 import { postBluesky } from "./utils/bluesky.ts";
 import { getCTAAlerts } from "./utils/cta/index.ts";
 import { Embed } from "./utils/discord/embed.ts";
 import { Webhook } from "./utils/discord/webhook.ts";
 import { getDrizzle, schema } from "./utils/drizzle.ts";
 import { postMastodon } from "./utils/mastodon.ts";
-import { titleCase, tryOrFail } from "./utils/misc.ts";
+import { chunkArray, titleCase, tryOrFail } from "./utils/misc.ts";
 import { postTwitter } from "./utils/twitter.ts";
 
 let webhook: Webhook | undefined;
@@ -109,9 +109,17 @@ export default {
 			);
 		}
 
-		const existingAlerts = await drizzle.query.alert.findMany({
-			where: () => inArray(schema.alert.id, alertIDs),
-		});
+		const existingAlerts: (typeof schema.alert.$inferSelect)[] = [];
+
+		// Cloudflare D1 has a hard cap of 100 params. Somehow this never managed to trigger before,
+		// but it started spitting errrors so now the queries are chunked to handle - Bloxs
+		for (const chunk of chunkArray(alertIDs, 100)) {
+			existingAlerts.push(
+				...(await drizzle.query.alert.findMany({
+					where: () => inArray(schema.alert.id, chunk),
+				})),
+			);
+		}
 
 		const alertInfo: {
 			content: string;
@@ -165,15 +173,25 @@ export default {
 				} else {
 					twitterBlocked = true;
 
-					await drizzle.insert(schema.ratelimit).values({
-						platform: "twitter",
-						resetTime: new Date(Date.now() + post.ratelimitTimeout),
-					}).onConflictDoUpdate({
-						target: schema.ratelimit.platform,
-						set: {
-							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
-						},
-					});
+					try {
+						await drizzle
+							.insert(schema.ratelimit)
+							.values({
+								platform: "twitter",
+								resetTime: new Date(Date.now() + post.ratelimitTimeout),
+							})
+							.onConflictDoUpdate({
+								target: schema.ratelimit.platform,
+								set: {
+									resetTime: sql.raw(
+										// TODO: see if there's a way to pull this exact value from drizzle
+										`excluded.${"reset_time"}`,
+									),
+								},
+							});
+					} catch (e) {
+						console.error("Error inserting ratelimit for Twitter", e);
+					}
 
 					await tryOrFail(
 						postErrorMessage(
@@ -196,15 +214,18 @@ export default {
 				} else {
 					blueskyBlocked = true;
 
-					await drizzle.insert(schema.ratelimit).values({
-						platform: "bluesky",
-						resetTime: new Date(Date.now() + post.ratelimitTimeout),
-					}).onConflictDoUpdate({
-						target: schema.ratelimit.platform,
-						set: {
-							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
-						},
-					});
+					await drizzle
+						.insert(schema.ratelimit)
+						.values({
+							platform: "bluesky",
+							resetTime: new Date(Date.now() + post.ratelimitTimeout),
+						})
+						.onConflictDoUpdate({
+							target: schema.ratelimit.platform,
+							set: {
+								resetTime: sql.raw(`excluded.${"reset_time"}`),
+							},
+						});
 
 					await tryOrFail(
 						postErrorMessage(
@@ -227,15 +248,18 @@ export default {
 				} else {
 					mastodonBlocked = true;
 
-					await drizzle.insert(schema.ratelimit).values({
-						platform: "mastodon",
-						resetTime: new Date(Date.now() + post.ratelimitTimeout),
-					}).onConflictDoUpdate({
-						target: schema.ratelimit.platform,
-						set: {
-							resetTime: sql.raw(`excluded.${schema.ratelimit.resetTime}`),
-						},
-					});
+					await drizzle
+						.insert(schema.ratelimit)
+						.values({
+							platform: "mastodon",
+							resetTime: new Date(Date.now() + post.ratelimitTimeout),
+						})
+						.onConflictDoUpdate({
+							target: schema.ratelimit.platform,
+							set: {
+								resetTime: sql.raw(`excluded.${"reset_time"}`),
+							},
+						});
 
 					await tryOrFail(
 						postErrorMessage(

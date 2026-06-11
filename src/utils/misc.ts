@@ -24,3 +24,13 @@ export const titleCase = (str: string): string =>
 				str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase(),
 		)
 		.join(" ");
+
+export const chunkArray = <T>(array: T[], chunkSize: number): T[][] => {
+	const chunks: T[][] = [];
+
+	for (let i = 0; i < array.length; i += chunkSize) {
+		chunks.push(array.slice(i, i + chunkSize));
+	}
+
+	return chunks;
+};
